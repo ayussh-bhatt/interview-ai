@@ -161,6 +161,7 @@ export const finishInterview = async (req, res) => {
         overallScore: evaluationResult.overallScore,
         feedback: evaluationResult.summary,
         improvement: evaluationResult.improvements,
+        questionWiseReview: evaluationResult.questionWiseReview,
       },
     });
 
@@ -196,7 +197,6 @@ export const getInterviewReview = async (req, res) => {
     const { sessionId } = req.params;
     const user = req.dbUser;
 
-    // 1️⃣ Verify session ownership
     const session = await prisma.interviewSession.findFirst({
       where: {
         id: sessionId,
@@ -210,11 +210,8 @@ export const getInterviewReview = async (req, res) => {
       });
     }
 
-    // 2️⃣ Fetch evaluation BY SESSION
     const evaluation = await prisma.evaluation.findUnique({
-      where: {
-        sessionId,
-      },
+      where: { sessionId },
     });
 
     if (!evaluation) {
@@ -223,9 +220,35 @@ export const getInterviewReview = async (req, res) => {
       });
     }
 
+    const formattedEvaluation = {
+      overallScore: evaluation.overallScore,
+      summary: evaluation.feedback,
+
+      skillBreakdown: {
+        communicationSkills: evaluation.communication,
+        technicalKnowledge: evaluation.correctness,
+        problemSolving: evaluation.completeness,
+        confidenceAndClarity: evaluation.clarity,
+        culturalFit: 7,
+      },
+
+      strengths: evaluation.feedback
+        ? [evaluation.feedback]
+        : [],
+
+      areasForImprovement: evaluation.improvement || [],
+      questionWiseReview: evaluation.questionWiseReview || [],
+    };
+
+    const metadata = {
+      targetRole: session.targetRole,
+      experienceLevel: session.experienceLevel,
+      questionCount: session.questionCount,
+    };
+
     return res.status(200).json({
-      session,
-      evaluation,
+      evaluation: formattedEvaluation,
+      metadata,
     });
   } catch (error) {
     console.error("Get interview review error:", error);
@@ -234,3 +257,5 @@ export const getInterviewReview = async (req, res) => {
     });
   }
 };
+
+

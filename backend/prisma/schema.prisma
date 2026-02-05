@@ -93,7 +93,8 @@ model Evaluation {
   communication Int
   overallScore  Int
   feedback      String
-  improvement   String
+  improvement   String[]
+  questionWiseReview Json? 
 
   createdAt     DateTime @default(now())
 

@@ -4,13 +4,13 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 /**
  * =====================================
- * FULL INTERVIEW EVALUATION (ONLY)
+ * FULL INTERVIEW EVALUATION
  * =====================================
  */
 export const evaluateInterview = async ({
   targetRole,
   experienceLevel,
-  qaPairs, // [{ question, answer }]
+  qaPairs,
 }) => {
   const model = genAI.getGenerativeModel({
     model: "gemini-2.5-flash-lite",
@@ -49,8 +49,10 @@ Also compute:
 
 Provide:
 - short summary
-- strengths
-- areas for improvement
+- strengths (array)
+- areas for improvement (array)
+
+ALSO provide feedback for EACH question.
 
 Output JSON only:
 {
@@ -60,8 +62,15 @@ Output JSON only:
   "communication": number,
   "overallScore": number,
   "summary": "string",
-  "strengths": "string",
-  "improvements": "string"
+  "strengths": ["string"],
+  "improvements": ["string"],
+  "questionWiseReview": [
+    {
+      "question": "string",
+      "whatWentWell": "string",
+      "howToImprove": "string"
+    }
+  ]
 }
 `;
 
@@ -81,7 +90,14 @@ const safeParse = (rawText) => {
     .trim();
 
   try {
-    return JSON.parse(cleanedText);
+    const parsed = JSON.parse(cleanedText);
+
+    return {
+      ...parsed,
+      strengths: parsed.strengths || [],
+      improvements: parsed.improvements || [],
+      questionWiseReview: parsed.questionWiseReview || [],
+    };
   } catch (err) {
     console.error("Failed to parse Gemini response:", cleanedText);
 
@@ -91,9 +107,10 @@ const safeParse = (rawText) => {
       clarity: 5,
       communication: 5,
       overallScore: 50,
-      summary: "Evaluation could not be parsed correctly.",
-      strengths: "N/A",
-      improvements: "Please try to answer more clearly and concisely.",
+      summary: "Evaluation parsing failed.",
+      strengths: ["General effort observed"],
+      improvements: ["Provide more structured answers"],
+      questionWiseReview: [],
     };
   }
 };

@@ -45,15 +45,18 @@ export default function Interview() {
       const res = await api.post("/interview/start", {
         targetRole,
         experienceLevel,
-        topics: topics.split(",").map((t) => t.trim()).filter(Boolean),
+        topics: topics
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
         description,
       });
 
       setSessionId(res.data.sessionId);
       setQuestions(
         Array.from({ length: res.data.totalQuestions }, (_, i) =>
-          i === 0 ? res.data.currentQuestion : null
-        )
+          i === 0 ? res.data.currentQuestion : null,
+        ),
       );
     } catch (err) {
       console.error(err);
@@ -111,8 +114,8 @@ export default function Interview() {
   };
 
   /* =========================
-     FINISH INTERVIEW
-  ========================= */
+      FINISH INTERVIEW
+    ========================= */
   const finishInterview = async () => {
     try {
       setLoading(true);
@@ -133,7 +136,63 @@ export default function Interview() {
   return (
     <div className="interview-container">
       {!sessionId ? (
-        <div className="interview-card">{/* setup UI unchanged */}</div>
+        <div className="interview-card">
+          {/* =========================
+                SETUP SCREEN
+              ========================= */}
+          <div className="interview-card">
+            <h1 className="interview-title">Start a New Interview Journey</h1>
+
+            {error && <p className="text-red-500 mb-4">{error}</p>}
+
+            <label className="interview-label">Target Role</label>
+            <input
+              className="interview-input"
+              placeholder="(e.g. Frontend Developer, Backend Developer)"
+              value={targetRole}
+              onChange={(e) => setTargetRole(e.target.value)}
+            />
+
+            <label className="interview-label">Experience Level</label>
+            <select
+              className="interview-select"
+              value={experienceLevel}
+              onChange={(e) => setExperienceLevel(e.target.value)}
+            >
+              <option value="" disabled>
+                Choose an experience level
+              </option>
+              <option>Beginner</option>
+              <option>Intermediate</option>
+              <option>Advanced</option>
+              <option>Expert</option>
+            </select>
+
+            <label className="interview-label">Topics</label>
+            <input
+              className="interview-input"
+              placeholder="(Comma separated eg. React, Node.js, System Design)"
+              value={topics}
+              onChange={(e) => setTopics(e.target.value)}
+            />
+
+            <label className="interview-label">Description</label>
+            <textarea
+              className="interview-textarea"
+              placeholder="(Any specific goals or notes for the session)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+
+            <button
+              className="interview-start-btn"
+              onClick={startInterview}
+              disabled={!targetRole || !experienceLevel || loading}
+            >
+              {loading ? "Creating..." : "Create Session"}
+            </button>
+          </div>
+        </div>
       ) : (
         <div className="interview-card live-interview">
           <div className="live-header">
@@ -150,7 +209,9 @@ export default function Interview() {
             <div className="answer-panel">
               <div className="answer-toggle">
                 <button
-                  className={answerMode === "video" ? "toggle active" : "toggle"}
+                  className={
+                    answerMode === "video" ? "toggle active" : "toggle"
+                  }
                   onClick={() => {
                     setAnswerMode("video");
                     setShowRecorder(true);
@@ -187,32 +248,30 @@ export default function Interview() {
             <div className="side-panel">
               <p className="side-title">Tips</p>
               <p className="side-text">
-                Structure your answer clearly. Focus on concepts, trade-offs, and
-                examples.
+                Structure your answer clearly. Focus on concepts, trade-offs,
+                and examples.
               </p>
             </div>
           </div>
 
-          
-<div className="live-actions">
-  {!isLastQuestion && (
-    <button
-      className="interview-start-btn"
-      onClick={submitAndNext}
-      disabled={answerMode === "video" ? !videoBlob : !textAnswer}
-    >
-      Submit & Next
-    </button>
-  )}
+          <div className="live-actions">
+            {!isLastQuestion && (
+              <button
+                className="interview-start-btn"
+                onClick={submitAndNext}
+                disabled={answerMode === "video" ? !videoBlob : !textAnswer}
+              >
+                Submit & Next
+              </button>
+            )}
 
-  <button
-    className={`finish-btn ${isLastQuestion ? "primary-finish" : ""}`}
-    onClick={finishInterview}
-  >
-    Finish Interview
-  </button>
-</div>
-
+            <button
+              className={`finish-btn ${isLastQuestion ? "primary-finish" : ""}`}
+              onClick={finishInterview}
+            >
+              Finish Interview
+            </button>
+          </div>
 
           {error && <p className="text-red-500 mt-4">{error}</p>}
         </div>

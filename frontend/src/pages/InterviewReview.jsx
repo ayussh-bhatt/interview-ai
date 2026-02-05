@@ -16,6 +16,11 @@ export default function InterviewReview() {
     const loadReview = async () => {
       try {
         const res = await api.get(`/interview/${sessionId}/review`);
+
+        if (!res.data?.evaluation || !res.data?.metadata) {
+          throw new Error("Invalid review response");
+        }
+
         setEvaluation(res.data.evaluation);
         setMeta(res.data.metadata);
       } catch (err) {
@@ -29,8 +34,16 @@ export default function InterviewReview() {
     loadReview();
   }, [sessionId]);
 
-  if (loading) return <Loader text="Generating interview review..." />;
-  if (error) return <p className="text-red-500 p-6">{error}</p>;
+  /* =========================
+     SAFE GUARDS
+  ========================= */
+  if (loading || !evaluation || !meta) {
+    return <Loader text="Generating interview review..." />;
+  }
+
+  if (error) {
+    return <p className="text-red-500 p-6">{error}</p>;
+  }
 
   return (
     <div className="review-container">
@@ -39,15 +52,15 @@ export default function InterviewReview() {
         <header className="review-header">
           <h1>Interview Performance Report</h1>
           <p>
-            {meta.targetRole} • {meta.experienceLevel} •{" "}
-            {meta.questionCount} Questions
+            {meta?.targetRole} • {meta?.experienceLevel} •{" "}
+            {meta?.questionCount} Questions
           </p>
         </header>
 
         {/* ================= OVERALL SCORE ================= */}
         <section className="review-score">
           <div className="score-circle">
-            <span>{evaluation.overallScore}</span>
+            <span>{evaluation?.overallScore ?? 0}</span>
             <small>/100</small>
           </div>
           <p className="score-label">Overall Interview Score</p>
@@ -56,19 +69,39 @@ export default function InterviewReview() {
         {/* ================= SKILL BREAKDOWN ================= */}
         <section className="review-section">
           <h2>Skill Breakdown</h2>
+
           <div className="review-metrics">
-            <Metric label="Communication Skills" value={evaluation.skillBreakdown.communicationSkills} />
-            <Metric label="Technical Knowledge" value={evaluation.skillBreakdown.technicalKnowledge} />
-            <Metric label="Problem Solving" value={evaluation.skillBreakdown.problemSolving} />
-            <Metric label="Confidence & Clarity" value={evaluation.skillBreakdown.confidenceAndClarity} />
-            <Metric label="Cultural Fit" value={evaluation.skillBreakdown.culturalFit} />
+            <Metric
+              label="Communication Skills"
+              value={evaluation?.skillBreakdown?.communicationSkills ?? 0}
+            />
+
+            <Metric
+              label="Technical Knowledge"
+              value={evaluation?.skillBreakdown?.technicalKnowledge ?? 0}
+            />
+
+            <Metric
+              label="Problem Solving"
+              value={evaluation?.skillBreakdown?.problemSolving ?? 0}
+            />
+
+            <Metric
+              label="Confidence & Clarity"
+              value={evaluation?.skillBreakdown?.confidenceAndClarity ?? 0}
+            />
+
+            <Metric
+              label="Cultural Fit"
+              value={evaluation?.skillBreakdown?.culturalFit ?? 0}
+            />
           </div>
         </section>
 
         {/* ================= SUMMARY ================= */}
         <section className="review-section">
           <h2>Overall Summary</h2>
-          <p>{evaluation.summary}</p>
+          <p>{evaluation?.summary || "No summary available."}</p>
         </section>
 
         {/* ================= QUESTION-WISE REVIEW ================= */}
@@ -76,19 +109,20 @@ export default function InterviewReview() {
           <h2>Question-wise Feedback</h2>
 
           <div className="question-review-list">
-            {evaluation.questionWiseReview.map((q, idx) => (
+            {(evaluation?.questionWiseReview || []).map((q, idx) => (
               <div key={idx} className="question-review-card">
                 <h3>Question {idx + 1}</h3>
-                <p className="question-text">{q.question}</p>
+
+                <p className="question-text">{q?.question}</p>
 
                 <div className="qa-block success">
                   <strong>What went well</strong>
-                  <p>{q.whatWentWell}</p>
+                  <p>{q?.whatWentWell || "No data"}</p>
                 </div>
 
                 <div className="qa-block warning">
                   <strong>How to improve</strong>
-                  <p>{q.howToImprove}</p>
+                  <p>{q?.howToImprove || "No data"}</p>
                 </div>
               </div>
             ))}
@@ -98,8 +132,9 @@ export default function InterviewReview() {
         {/* ================= STRENGTHS ================= */}
         <section className="review-section">
           <h2>Strengths</h2>
+
           <ul className="bullet-list success">
-            {evaluation.strengths.map((s, i) => (
+            {(evaluation?.strengths || []).map((s, i) => (
               <li key={i}>{s}</li>
             ))}
           </ul>
@@ -108,8 +143,9 @@ export default function InterviewReview() {
         {/* ================= IMPROVEMENTS ================= */}
         <section className="review-section">
           <h2>Areas for Improvement</h2>
+
           <ul className="bullet-list warning">
-            {evaluation.areasForImprovement.map((i, idx) => (
+            {(evaluation?.areasForImprovement || []).map((i, idx) => (
               <li key={idx}>{i}</li>
             ))}
           </ul>

@@ -51,36 +51,44 @@ This system enables candidates to practice realistic interview scenarios with vi
 
 ---
 
-## 🏗️ Architecture Overview
-React Frontend
-↓
-REST API (Node.js + Express)
-↓
-Service Layer (Gemini AI Processing)
-↓
-Prisma ORM
-↓
-PostgreSQL Database
-↓
-Cloudinary (Video Storage)
+## Architecture Overview
+The system is designed using a modular full-stack architecture.
+
+### Frontend
+- React + Vite SPA
+- Firebase Authentication
+- Video capture & dashboard analytics
+
+### Backend
+- Express REST API
+- Authentication & middleware layer
+- AI orchestration services
+
+### Data Layer
+- Prisma ORM
+- PostgreSQL relational database
+
+### External Services
+- Gemini AI for evaluation
+- Cloudinary for media storage
 
 
 ---
 
-## 🗂️ Project Structure
-frontend/
-├── components/
-├── pages/
-├── services/
-└── context/
+## Project Structure
+### Frontend
+- **components/** — reusable UI components
+- **pages/** — application routes & screens
+- **services/** — API communication & integrations
+- **context/** — authentication & global state
 
-backend/
-├── routes/
-├── controllers/
-├── services/
-├── middleware/
-├── prisma/
-└── config/
+### Backend
+- **routes/** — REST endpoint definitions
+- **controllers/** — request orchestration
+- **services/** — AI processing & business logic
+- **middleware/** — authentication & security
+- **prisma/** — database schema & migrations
+- **config/** — database & environment setup
 
 
 ---
